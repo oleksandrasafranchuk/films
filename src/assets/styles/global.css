@@ -1,0 +1,14 @@
+@import url('https://fonts.googleapis.com/css2?family=Dancing+Script:wght@400..700&family=Lora:ital,wght@0,400..700;1,400..700&family=Momo+Signature&display=swap');
+:root {
+  --color-primary: #222c58;
+  --color-dark: #1a2040;
+  --color-white: #ffffff;
+  --color-light: #eee;
+  --color-light-hover: #e0e0e0;
+  --color-text: #333;
+  --color-text-light: #666;
+  --color-rating: #f39c12;
+  --color-error: #e74c3c;
+  --shadow-dark: rgba(0, 0, 0, 0.25);
+  --shadow-light: rgba(0, 0, 0, 0.22);
+}

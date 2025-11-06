@@ -1,6 +1,7 @@
 import { createRouter, createWebHistory } from 'vue-router'
 import AuthView from '../views/AuthView.vue'
 import HomeView from '../views/HomeView.vue'
+import MovieDetailView from '../views/MovieDetailView.vue'
 
 const routes = [
   {
@@ -12,6 +13,12 @@ const routes = [
     path: '/home',
     name: 'Home',
     component: HomeView,
+    meta: { requiresAuth: true },
+  },
+  {
+    path: '/movie/:id',
+    name: 'MovieDetail',
+    component: MovieDetailView,
     meta: { requiresAuth: true },
   },
 ]

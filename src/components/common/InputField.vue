@@ -4,7 +4,6 @@
       {{ label }}
       <span v-if="required" class="required">*</span>
     </label>
-
     <input
       :type="type"
       :placeholder="placeholder"
@@ -14,7 +13,6 @@
       @focus="handleFocus"
       :class="['input-field', { 'input-error': error, 'input-focus': isFocused }]"
     />
-
     <transition name="error-fade">
       <span v-if="error" class="error-message">
         {{ error }}
@@ -27,35 +25,15 @@
 export default {
   name: 'InputField',
   props: {
-    modelValue: {
-      type: String,
-      default: '',
-    },
-    label: {
-      type: String,
-      default: '',
-    },
-    type: {
-      type: String,
-      default: 'text',
-    },
-    placeholder: {
-      type: String,
-      default: '',
-    },
-    error: {
-      type: String,
-      default: '',
-    },
-    required: {
-      type: Boolean,
-      default: false,
-    },
+    modelValue: { type: String, default: '' },
+    label: { type: String, default: '' },
+    type: { type: String, default: 'text' },
+    placeholder: { type: String, default: '' },
+    error: { type: String, default: '' },
+    required: { type: Boolean, default: false },
   },
   data() {
-    return {
-      isFocused: false,
-    }
+    return { isFocused: false }
   },
   emits: ['update:modelValue', 'blur'],
   methods: {
@@ -75,63 +53,51 @@ export default {
   flex-direction: column;
   gap: 8px;
 }
-
 .input-label {
   color: #333;
   font-weight: 500;
   font-size: 14px;
 }
-
 .required {
-  color: #e74c3c;
+  color: var(--color-error);
 }
-
 .input-field {
-  width: 100%;
-  padding: 12px 16px;
-  border: 2px solid #e0e0e0;
-  border-radius: 8px;
-  font-size: 16px;
-  transition: all 0.3s ease;
-  box-sizing: border-box;
-  font-family: inherit;
+  background-color: var(--color-light);
+  border: none;
+  padding: 12px 15px;
+  margin: 8px 0;
+  width: 120%;
+  border-radius: 5px;
+  font-size: 14px;
 }
-
 .input-field:focus {
   outline: none;
-  border-color: #667eea;
+  border-color: var(--color-primary);
   box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
 }
-
 .input-field::placeholder {
-  color: #999;
+  color: var(--color-light);
 }
-
 .input-error {
-  border-color: #e74c3c !important;
+  border-color: var(--color-error) !important;
 }
-
 .input-error:focus {
   box-shadow: 0 0 0 3px rgba(231, 76, 60, 0.1);
 }
-
 .error-message {
-  color: #e74c3c;
+  color: var(--color-error);
   font-size: 13px;
   display: flex;
   align-items: center;
   gap: 4px;
 }
-
 .error-message::before {
   content: '⚠';
 }
-
 .error-fade-enter-active,
 .error-fade-leave-active {
   transition: all 0.3s ease;
 }
-
 .error-fade-enter-from,
 .error-fade-leave-to {
   opacity: 0;
