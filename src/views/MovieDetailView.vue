@@ -1,6 +1,6 @@
 <template>
   <div class="detail-view">
-    <AppHeader @logout="handleLogout" />
+    <AppHeader @logout="handleLogout" :show-logout="false" />
 
     <main class="detail-content">
       <div v-if="loading" class="loader">Loading...</div>
@@ -22,7 +22,7 @@
 
             <div class="meta-info">
               <span class="rating">★ {{ movie.vote_average.toFixed(1) }}/10</span>
-              <span>{{ movie.release_date }}</span>
+              <span>{{ formatDate(movie.release_date) }}</span>
               <span>{{ movie.runtime }} min</span>
             </div>
 
@@ -37,12 +37,12 @@
               <p>{{ movie.overview || 'No overview available' }}</p>
             </div>
 
-            <div class="additional-info">
-              <div class="info-item">
+            <div class="additional-info" v-if="movie.budget || movie.revenue">
+              <div class="info-item" v-if="movie.budget">
                 <strong>Budget:</strong>
                 {{ formatMoney(movie.budget) }}
               </div>
-              <div class="info-item">
+              <div class="info-item" v-if="movie.revenue">
                 <strong>Revenue:</strong>
                 {{ formatMoney(movie.revenue) }}
               </div>
@@ -105,8 +105,16 @@ export default {
       this.$router.push('/')
     },
 
+    formatDate(dateString) {
+      if (!dateString) return ''
+      const date = new Date(dateString)
+      const day = String(date.getDate()).padStart(2, '0')
+      const month = String(date.getMonth() + 1).padStart(2, '0')
+      const year = String(date.getFullYear())
+      return `${day}.${month}.${year}`
+    },
+
     formatMoney(amount) {
-      if (!amount) return 'No data'
       return new Intl.NumberFormat('en-US', {
         style: 'currency',
         currency: 'USD',
@@ -135,7 +143,7 @@ export default {
   background: var(--color-white);
   border-radius: 12px;
   padding: 30px;
-  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+  box-shadow: 0 2px 10px var(--shadow-light);
 }
 
 .detail-grid {
@@ -148,7 +156,7 @@ export default {
 .no-poster {
   width: 100%;
   border-radius: 12px;
-  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+  box-shadow: 0 4px 15px var(--shadow-light);
 }
 
 .no-poster {
@@ -157,7 +165,7 @@ export default {
   align-items: center;
   justify-content: center;
   background: var(--color-primary);
-  color: white;
+  color: var(--color-white);
   font-size: 24px;
 }
 
@@ -195,7 +203,7 @@ export default {
 .genre-badge {
   padding: 6px 12px;
   background: var(--color-primary);
-  color: white;
+  color: var(--color-white);
   border-radius: 15px;
   font-size: 14px;
 }
@@ -223,8 +231,9 @@ export default {
   text-align: center;
   padding: 40px;
   font-size: 18px;
-  color: #222c58;
+  color: var(--color-primary);
 }
+
 .back-wrapper {
   display: flex;
   justify-content: flex-start;
@@ -240,6 +249,35 @@ export default {
     max-width: 300px;
     margin: 0 auto;
   }
+
+  .info-section h1 {
+    text-align: center;
+  }
+
+  .tagline {
+    text-align: center;
+  }
+
+  .meta-info {
+    justify-content: center;
+  }
+
+  .genres {
+    justify-content: center;
+  }
+
+  .overview h2 {
+    text-align: center;
+  }
+
+  .overview p {
+    text-align: center;
+  }
+
+  .additional-info {
+    text-align: center;
+  }
+
   .back-wrapper {
     justify-content: center;
   }

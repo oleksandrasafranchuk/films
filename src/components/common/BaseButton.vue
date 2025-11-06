@@ -99,5 +99,8 @@ export default {
   .base-button {
     font-size: 10px;
   }
+  .base-button.ghost {
+    display: none;
+  }
 }
 </style>

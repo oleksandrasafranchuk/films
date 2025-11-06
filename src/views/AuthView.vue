@@ -3,7 +3,7 @@
     <div class="auth-container" :class="{ 'right-panel-active': isRegisterMode }">
       <div class="form-container sign-up-container">
         <form @submit.prevent="handleRegister">
-          <h1>Create Account</h1>
+          <h1 class="register">Create Account</h1>
           <span>Use your email for registration</span>
 
           <InputField
@@ -64,12 +64,12 @@
           <div class="overlay-panel overlay-left">
             <h1>Welcome Back!</h1>
             <p>To keep connected with us please login with your personal info</p>
-            <BaseButton variant="ghost" @click="toggleMode">Sign In</BaseButton>
+            <BaseButton variant="secondary" @click="toggleMode">Sign In</BaseButton>
           </div>
           <div class="overlay-panel overlay-right">
             <h1>Hello!</h1>
             <p>Enter your personal details and start journey with us</p>
-            <BaseButton variant="ghost" @click="toggleMode">Sign Up</BaseButton>
+            <BaseButton variant="secondary" @click="toggleMode">Sign Up</BaseButton>
           </div>
         </div>
       </div>
@@ -259,7 +259,7 @@ h1 {
   font-weight: bold;
   margin: 0 0 15px;
   font-size: 24px;
-  padding-bottom: 10px;
+  /* padding-bottom: 10px; */
 }
 span {
   font-size: 12px;
@@ -431,6 +431,9 @@ span {
   span {
     font-size: 11px;
   }
+  .register {
+    margin-top: 20px;
+  }
 }
 @media screen and (max-width: 480px) {
   .auth-wrapper {
@@ -441,6 +444,7 @@ span {
     border-radius: 25px;
     min-height: 580px;
   }
+
   form {
     padding: 15px 25px;
     padding-top: 15px;

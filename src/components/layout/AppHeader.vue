@@ -7,7 +7,7 @@
 
       <slot name="search"></slot>
 
-      <nav class="nav-menu">
+      <nav v-if="showLogout" class="nav-menu">
         <BaseButton variant="ghost" @click="$emit('logout')"> Logout </BaseButton>
       </nav>
     </div>
@@ -21,6 +21,12 @@ export default {
   name: 'AppHeader',
   components: {
     BaseButton,
+  },
+  props: {
+    showLogout: {
+      type: Boolean,
+      default: true,
+    },
   },
   emits: ['logout'],
 }

@@ -61,12 +61,12 @@ export default {
   transition:
     transform 0.3s,
     box-shadow 0.3s;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  box-shadow: 0 2px 8px var(--shadow-light);
 }
 
 .movie-card:hover {
   transform: translateY(-5px);
-  box-shadow: 0 5px 20px rgba(0, 0, 0, 0.2);
+  box-shadow: 0 5px 20px var(--shadow-dark);
 }
 
 .image-container {
@@ -88,8 +88,8 @@ export default {
   display: flex;
   align-items: center;
   justify-content: center;
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-  color: white;
+  background: var(--color-primary);
+  color: var(--color-white);
   font-size: 18px;
 }
 
@@ -100,7 +100,7 @@ export default {
 .movie-title {
   font-size: 16px;
   margin: 0 0 10px 0;
-  color: #333;
+  color: var(--color-text);
   overflow: hidden;
   text-overflow: ellipsis;
   display: -webkit-box;

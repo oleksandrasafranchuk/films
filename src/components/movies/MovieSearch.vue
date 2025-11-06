@@ -53,7 +53,7 @@ export default {
 
 .search-input:focus {
   outline: none;
-  box-shadow: 0 0 0 3px rgba(255, 255, 255, 0.3);
+  box-shadow: 0 0 0 3px var(--shadow-dark);
 }
 
 @media (max-width: 768px) {
@@ -61,9 +61,9 @@ export default {
     justify-content: center;
   }
   .search-input {
-    max-width: 200px;
-    padding: 12px 30px;
-    font-size: 14px;
+    max-width: 500px;
+    padding: 12px 25px;
+    font-size: 13px;
     margin-top: 5px;
   }
 }

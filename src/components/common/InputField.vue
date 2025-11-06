@@ -54,7 +54,7 @@ export default {
   gap: 8px;
 }
 .input-label {
-  color: #333;
+  color: var(--color-text);
   font-weight: 500;
   font-size: 14px;
 }
@@ -66,7 +66,7 @@ export default {
   border: none;
   padding: 12px 15px;
   margin: 8px 0;
-  width: 120%;
+  width: 100%;
   border-radius: 5px;
   font-size: 14px;
 }
@@ -76,7 +76,7 @@ export default {
   box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
 }
 .input-field::placeholder {
-  color: var(--color-light);
+  color: var(--color-text-light);
 }
 .input-error {
   border-color: var(--color-error) !important;
@@ -102,5 +102,11 @@ export default {
 .error-fade-leave-to {
   opacity: 0;
   transform: translateY(-5px);
+}
+@media screen and (max-width: 768px) {
+  .input-field {
+    padding: 10px 12px;
+    font-size: 13px;
+  }
 }
 </style>
