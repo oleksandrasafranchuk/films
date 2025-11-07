@@ -2,7 +2,7 @@
   <div class="home-view">
     <AppHeader @logout="handleLogout">
       <template #search>
-        <MovieSearch @search="handleSearch" class="search-input" />
+        <MovieSearch @search="handleSearch" class="search-input" ref="movieSearch" />
       </template>
     </AppHeader>
     <main class="main-content">
@@ -251,6 +251,10 @@ export default {
     },
 
     async handleFilter(genreId) {
+      if (this.$refs.movieSearch) {
+        this.$refs.movieSearch.searchQuery = ''
+      }
+      this.searchQuery = ''
       this.selectedGenre = genreId
       this.saveFiltersToSession()
       await this.loadMovies(true)
