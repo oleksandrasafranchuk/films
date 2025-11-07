@@ -61,15 +61,15 @@
 
       <div class="overlay-container">
         <div class="overlay">
-          <div class="overlay-panel overlay-left">
-            <h1>Welcome Back!</h1>
-            <p>To keep connected with us please login with your personal info</p>
-            <BaseButton variant="secondary" @click="toggleMode">Sign In</BaseButton>
-          </div>
           <div class="overlay-panel overlay-right">
-            <h1>Hello!</h1>
-            <p>Enter your personal details and start journey with us</p>
+            <h1>Welcome Back!</h1>
+            <p>Don't have an account?</p>
             <BaseButton variant="secondary" @click="toggleMode">Sign Up</BaseButton>
+          </div>
+          <div class="overlay-panel overlay-left">
+            <h1>Hello!</h1>
+            <p>Already have an account?</p>
+            <BaseButton variant="secondary" @click="toggleMode">Sign In</BaseButton>
           </div>
         </div>
       </div>
@@ -259,7 +259,6 @@ h1 {
   font-weight: bold;
   margin: 0 0 15px;
   font-size: 24px;
-  /* padding-bottom: 10px; */
 }
 span {
   font-size: 12px;

@@ -21,30 +21,18 @@
     </div>
   </div>
 </template>
-
 <script>
 import BaseButton from '../common/BaseButton.vue'
-
 export default {
   name: 'MovieFilter',
-  components: {
-    BaseButton,
-  },
+  components: { BaseButton },
   props: {
-    genres: {
-      type: Array,
-      required: true,
-    },
-  },
-  data() {
-    return {
-      selectedGenre: null,
-    }
+    genres: { type: Array, required: true },
+    selectedGenre: { type: [Number, null], default: null },
   },
   emits: ['filter'],
   methods: {
     selectGenre(genreId) {
-      this.selectedGenre = genreId
       this.$emit('filter', genreId)
     },
   },

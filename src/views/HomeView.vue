@@ -5,7 +5,6 @@
         <MovieSearch @search="handleSearch" class="search-input" />
       </template>
     </AppHeader>
-
     <main class="main-content">
       <div class="container">
         <button class="toggle-filters-btn" @click="filtersVisible = !filtersVisible">
@@ -19,30 +18,49 @@
               d="M18.75 12.75h1.5a.75.75 0 0 0 0-1.5h-1.5a.75.75 0 0 0 0 1.5ZM12 6a.75.75 0 0 1 .75-.75h7.5a.75.75 0 0 1 0 1.5h-7.5A.75.75 0 0 1 12 6ZM12 18a.75.75 0 0 1 .75-.75h7.5a.75.75 0 0 1 0 1.5h-7.5A.75.75 0 0 1 12 18ZM3.75 6.75h1.5a.75.75 0 1 0 0-1.5h-1.5a.75.75 0 0 0 0 1.5ZM5.25 18.75h-1.5a.75.75 0 0 1 0-1.5h1.5a.75.75 0 0 1 0 1.5ZM3 12a.75.75 0 0 1 .75-.75h7.5a.75.75 0 0 1 0 1.5h-7.5A.75.75 0 0 1 3 12ZM9 3.75a2.25 2.25 0 1 0 0 4.5 2.25 2.25 0 0 0 0-4.5ZM12.75 12a2.25 2.25 0 1 1 4.5 0 2.25 2.25 0 0 1-4.5 0ZM9 15.75a2.25 2.25 0 1 0 0 4.5 2.25 2.25 0 0 0 0-4.5Z"
             />
           </svg>
-
           Filters
         </button>
+        <transition name="slide-fade">
+          <div v-show="filtersVisible">
+            <MovieFilter :genres="genres" :selectedGenre="selectedGenre" @filter="handleFilter" />
+            <YearFilter ref="yearFilter" @filter="handleYearFilter" />
+          </div>
+        </transition>
 
-        <div v-show="filtersVisible">
-          <MovieFilter :genres="genres" @filter="handleFilter" />
-          <YearFilter ref="yearFilter" @filter="handleYearFilter" />
-        </div>
+        <transition name="fade" mode="out-in">
+          <div v-if="(loading || isInitialLoad) && movies.length === 0" key="loader" class="loader">
+            <div class="skeleton-grid">
+              <div v-for="n in 10" :key="n" class="skeleton-card">
+                <div class="skeleton-image"></div>
+                <div class="skeleton-text"></div>
+                <div class="skeleton-text short"></div>
+              </div>
+            </div>
+          </div>
+          <div v-else-if="error" key="error" class="error-message">
+            <p>Error: {{ error }}</p>
+            <BaseButton variant="primary" @click="loadMovies">Retry</BaseButton>
+          </div>
+          <div
+            v-else-if="!loading && !isInitialLoad && displayMovies.length === 0"
+            key="no-results"
+            class="no-results"
+          >
+            <p>No movies found</p>
+          </div>
+          <div v-else key="movies">
+            <MovieList :movies="displayMovies" @select-movie="goToMovie" />
 
-        <div v-if="loading && movies.length === 0" class="loader">Loading...</div>
-        <div v-else-if="error" class="error-message">
-          <p>Error: {{ error }}</p>
-          <BaseButton variant="primary" @click="loadMovies">Retry</BaseButton>
-        </div>
-        <div v-else-if="displayMovies.length === 0" class="no-results">
-          <p>No movies found</p>
-        </div>
-        <MovieList v-else :movies="displayMovies" @select-movie="goToMovie" />
+            <div v-if="loading && movies.length > 0" class="loader-more">
+              <div class="spinner"></div>
+              Loading more...
+            </div>
+          </div>
+        </transition>
 
-        <div v-if="loading && movies.length > 0" class="loader-more">Loading more...</div>
         <div ref="loadMoreTrigger" class="load-more-trigger"></div>
       </div>
     </main>
-
     <AppFooter />
   </div>
 </template>
@@ -76,34 +94,90 @@ export default {
       loading: false,
       error: null,
       selectedGenre: null,
-      selectedYearRange: { minYear: 1990, maxYear: 2026 },
+      selectedYearRange: null,
       searchQuery: '',
       currentPage: 1,
       totalPages: 1,
       observer: null,
-      filtersVisible: false, // для керування видимістю фільтрів
+      filtersVisible: false,
+      debounceTimer: null,
+      isInitialLoad: true,
     }
   },
   async created() {
     await this.loadGenres()
+    await this.initializeYearRange()
+    this.restoreFiltersFromSession()
     await this.loadMovies()
   },
   mounted() {
     this.setupIntersectionObserver()
+    this.$nextTick(() => {
+      const savedYearRange = sessionStorage.getItem('selectedYearRange')
+      if (savedYearRange && this.$refs.yearFilter) {
+        const parsed = JSON.parse(savedYearRange)
+        this.$refs.yearFilter.minYear = parsed.minYear
+        this.$refs.yearFilter.maxYear = parsed.maxYear
+      }
+    })
   },
   beforeUnmount() {
     if (this.observer) {
       this.observer.disconnect()
     }
+    if (this.debounceTimer) {
+      clearTimeout(this.debounceTimer)
+    }
   },
   methods: {
-    setupIntersectionObserver() {
-      const options = {
-        root: null,
-        rootMargin: '300px',
-        threshold: 0.1,
+    async initializeYearRange() {
+      try {
+        const yearRange = await tmdbApi.getYearRange()
+        const savedYearRange = sessionStorage.getItem('selectedYearRange')
+        if (savedYearRange) {
+          this.selectedYearRange = JSON.parse(savedYearRange)
+        } else {
+          this.selectedYearRange = yearRange
+        }
+        if (this.$refs.yearFilter) {
+          this.$refs.yearFilter.setYearRange(yearRange.minYear, yearRange.maxYear)
+          if (savedYearRange) {
+            const parsed = JSON.parse(savedYearRange)
+            this.$refs.yearFilter.minYear = parsed.minYear
+            this.$refs.yearFilter.maxYear = parsed.maxYear
+          }
+        }
+      } catch (error) {
+        console.error('Failed to initialize year range:', error)
+        const currentYear = new Date().getFullYear()
+        this.selectedYearRange = { minYear: 1900, maxYear: currentYear }
       }
+    },
 
+    saveFiltersToSession() {
+      sessionStorage.setItem('selectedGenre', JSON.stringify(this.selectedGenre))
+      sessionStorage.setItem('selectedYearRange', JSON.stringify(this.selectedYearRange))
+      sessionStorage.setItem('searchQuery', this.searchQuery)
+    },
+
+    restoreFiltersFromSession() {
+      const savedGenre = sessionStorage.getItem('selectedGenre')
+      const savedYearRange = sessionStorage.getItem('selectedYearRange')
+      const savedSearchQuery = sessionStorage.getItem('searchQuery')
+
+      if (savedGenre !== null) {
+        this.selectedGenre = JSON.parse(savedGenre)
+      }
+      if (savedYearRange !== null) {
+        this.selectedYearRange = JSON.parse(savedYearRange)
+      }
+      if (savedSearchQuery !== null) {
+        this.searchQuery = savedSearchQuery
+      }
+    },
+
+    setupIntersectionObserver() {
+      const options = { root: null, rootMargin: '300px', threshold: 0.1 }
       this.observer = new IntersectionObserver((entries) => {
         entries.forEach((entry) => {
           if (entry.isIntersecting && !this.loading && this.currentPage < this.totalPages) {
@@ -111,7 +185,6 @@ export default {
           }
         })
       }, options)
-
       if (this.$refs.loadMoreTrigger) {
         this.observer.observe(this.$refs.loadMoreTrigger)
       }
@@ -130,138 +203,90 @@ export default {
         this.currentPage = 1
         this.movies = []
       }
-
       this.loading = true
       this.error = null
 
       try {
-        const data = await tmdbApi.getPopularMovies(this.currentPage)
-
-        if (reset) {
-          this.movies = data.results || []
-          this.updateYearRange()
+        let data
+        if (this.searchQuery.trim()) {
+          data = await tmdbApi.searchMovies(
+            this.searchQuery,
+            this.currentPage,
+            this.selectedYearRange,
+          )
+        } else if (this.selectedGenre !== null) {
+          data = await tmdbApi.getMoviesByGenre(
+            this.selectedGenre,
+            this.currentPage,
+            this.selectedYearRange,
+          )
         } else {
-          this.movies = [...this.movies, ...(data.results || [])]
+          data = await tmdbApi.getPopularMovies(this.currentPage, this.selectedYearRange)
         }
 
+        const newMovies = data.results || []
+        if (reset) {
+          this.movies = newMovies
+        } else {
+          const allMovies = [...this.movies, ...newMovies]
+          this.movies = allMovies.filter(
+            (movie, idx, arr) => arr.findIndex((m) => m.id === movie.id) === idx,
+          )
+        }
+        this.displayMovies = this.movies
         this.totalPages = data.total_pages || 1
-        this.applyFilters()
       } catch (error) {
         console.error('Failed to load movies:', error)
         this.error = error.message || 'Failed to load movies'
       } finally {
         this.loading = false
+        this.isInitialLoad = false
       }
     },
 
     async loadMoreMovies() {
-      if (this.currentPage >= this.totalPages || this.loading) {
-        return
-      }
-
+      if (this.currentPage >= this.totalPages || this.loading) return
       this.currentPage++
+      await this.loadMovies(false)
+    },
 
-      if (this.searchQuery.trim()) {
-        await this.searchMovies(this.searchQuery, false)
-      } else {
-        await this.loadMovies(false)
-      }
+    async handleFilter(genreId) {
+      this.selectedGenre = genreId
+      this.saveFiltersToSession()
+      await this.loadMovies(true)
     },
 
     async handleSearch(query) {
       this.searchQuery = query
       this.selectedGenre = null
-
-      if (query.trim()) {
-        await this.searchMovies(query, true)
-      } else {
-        await this.loadMovies(true)
-      }
-    },
-
-    async searchMovies(query, reset = true) {
-      if (reset) {
-        this.currentPage = 1
-        this.movies = []
-      }
-
-      this.loading = true
-      this.error = null
-
-      try {
-        const data = await tmdbApi.searchMovies(query, this.currentPage)
-
-        if (reset) {
-          this.movies = data.results || []
-          this.updateYearRange()
-        } else {
-          this.movies = [...this.movies, ...(data.results || [])]
-        }
-
-        this.totalPages = data.total_pages || 1
-        this.applyFilters()
-      } catch (error) {
-        console.error('Search failed:', error)
-        this.error = error.message
-      } finally {
-        this.loading = false
-      }
-    },
-
-    updateYearRange() {
-      if (this.movies.length === 0) return
-
-      const years = this.movies
-        .map((m) => {
-          const date = m.release_date
-          return date ? parseInt(date.split('-')[0]) : 0
-        })
-        .filter((y) => y > 0)
-
-      if (years.length > 0) {
-        const minYear = Math.min(...years)
-        const maxYear = Math.max(...years)
-
-        if (this.$refs.yearFilter) {
-          this.$refs.yearFilter.setYearRange(minYear, maxYear)
-          this.selectedYearRange = { minYear, maxYear }
-        }
-      }
-    },
-
-    handleFilter(genreId) {
-      this.selectedGenre = genreId
-      this.applyFilters()
+      this.saveFiltersToSession()
+      await this.loadMovies(true)
     },
 
     handleYearFilter(yearRange) {
       this.selectedYearRange = yearRange
-      this.applyFilters()
-    },
+      this.saveFiltersToSession()
 
-    applyFilters() {
-      let filtered = this.movies
-      if (this.selectedGenre !== null) {
-        filtered = filtered.filter((movie) => movie.genre_ids.includes(this.selectedGenre))
+      if (this.debounceTimer) {
+        clearTimeout(this.debounceTimer)
       }
-      filtered = filtered.filter((movie) => {
-        const releaseYear = movie.release_date ? parseInt(movie.release_date.split('-')[0]) : 0
-        return (
-          releaseYear >= this.selectedYearRange.minYear &&
-          releaseYear <= this.selectedYearRange.maxYear
-        )
-      })
-
-      this.displayMovies = filtered
+      this.debounceTimer = setTimeout(() => {
+        this.loadMovies(true)
+      }, 500)
     },
 
     goToMovie(movieId) {
+      sessionStorage.setItem('movieScrollPosition', window.scrollY)
       this.$router.push({ name: 'MovieDetail', params: { id: movieId } })
     },
 
     handleLogout() {
       localStorage.removeItem('isAuthenticated')
       localStorage.removeItem('userData')
+      sessionStorage.removeItem('selectedGenre')
+      sessionStorage.removeItem('selectedYearRange')
+      sessionStorage.removeItem('searchQuery')
+      sessionStorage.removeItem('movieScrollPosition')
       this.$router.push('/')
     },
   },
@@ -286,8 +311,77 @@ export default {
   margin: 0 auto;
 }
 
-.loader,
-.loader-more {
+.skeleton-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+  gap: 20px;
+  margin-top: 20px;
+}
+
+.skeleton-card {
+  background: var(--color-white);
+  border-radius: 12px;
+  padding: 15px;
+  box-shadow: 0 2px 8px var(--shadow-light);
+}
+
+.skeleton-image {
+  width: 100%;
+  aspect-ratio: 2/3;
+  background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%);
+  background-size: 200% 100%;
+  animation: shimmer 1.5s infinite;
+  border-radius: 8px;
+  margin-bottom: 10px;
+}
+
+.skeleton-text {
+  height: 16px;
+  background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%);
+  background-size: 200% 100%;
+  animation: shimmer 1.5s infinite;
+  border-radius: 4px;
+  margin-bottom: 8px;
+}
+
+.skeleton-text.short {
+  width: 60%;
+}
+
+@keyframes shimmer {
+  0% {
+    background-position: 200% 0;
+  }
+  100% {
+    background-position: -200% 0;
+  }
+}
+
+.fade-enter-active,
+.fade-leave-active {
+  transition: opacity 0.3s ease;
+}
+
+.fade-enter-from,
+.fade-leave-to {
+  opacity: 0;
+}
+
+.slide-fade-enter-active {
+  transition: all 0.3s ease-out;
+}
+
+.slide-fade-leave-active {
+  transition: all 0.2s cubic-bezier(1, 0.5, 0.8, 1);
+}
+
+.slide-fade-enter-from,
+.slide-fade-leave-to {
+  transform: translateY(-10px);
+  opacity: 0;
+}
+
+.loader {
   text-align: center;
   padding: 40px;
   font-size: 18px;
@@ -297,13 +391,33 @@ export default {
 .loader-more {
   padding: 20px;
   font-size: 16px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  text-align: center;
+  color: var(--color-primary);
+}
+
+.spinner {
+  width: 20px;
+  height: 20px;
+  border: 3px solid var(--color-light);
+  border-top-color: var(--color-primary);
+  border-radius: 50%;
+  animation: spin 0.8s linear infinite;
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
 }
 
 .error-message {
   text-align: center;
   padding: 40px;
   color: var(--color-error);
-  font-family: 'Lora', serif;
 }
 
 .error-message p {
@@ -369,6 +483,11 @@ export default {
     padding: 30px 15px;
   }
 
+  .skeleton-grid {
+    grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+    gap: 15px;
+  }
+
   .loader,
   .loader-more {
     padding: 30px 15px;
@@ -384,6 +503,11 @@ export default {
 @media (max-width: 480px) {
   .main-content {
     padding: 20px 10px;
+  }
+
+  .skeleton-grid {
+    grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+    gap: 10px;
   }
 
   .loader,

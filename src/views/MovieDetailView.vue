@@ -98,6 +98,12 @@ export default {
 
     goBack() {
       this.$router.back()
+      this.$nextTick(() => {
+        setTimeout(() => {
+          const scrollY = parseInt(sessionStorage.getItem('movieScrollPosition') || '0', 10)
+          window.scrollTo(0, scrollY)
+        }, 50)
+      })
     },
 
     handleLogout() {

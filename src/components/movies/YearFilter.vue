@@ -12,7 +12,7 @@
           type="range"
           :min="absoluteMinYear"
           :max="absoluteMaxYear"
-          :value="minYear"
+          v-model.number="minYear"
           @input="updateMinYear"
           class="slider min-slider"
         />
@@ -20,7 +20,7 @@
           type="range"
           :min="absoluteMinYear"
           :max="absoluteMaxYear"
-          :value="maxYear"
+          v-model.number="maxYear"
           @input="updateMaxYear"
           class="slider max-slider"
         />
@@ -64,10 +64,10 @@ export default {
   name: 'YearFilter',
   data() {
     return {
-      minYear: 2002,
-      maxYear: 2025,
-      absoluteMinYear: 2002,
-      absoluteMaxYear: 2025,
+      minYear: 1900,
+      maxYear: new Date().getFullYear(),
+      absoluteMinYear: 1900,
+      absoluteMaxYear: new Date().getFullYear(),
       yearTicks: [],
     }
   },
@@ -78,7 +78,7 @@ export default {
   methods: {
     calculateYearTicks() {
       const range = this.absoluteMaxYear - this.absoluteMinYear
-      const interval = Math.ceil(range / 7)
+      const interval = Math.max(1, Math.ceil(range / 7))
       this.yearTicks = []
 
       for (let i = this.absoluteMinYear; i <= this.absoluteMaxYear; i += interval) {
@@ -112,6 +112,7 @@ export default {
 
     getPercentage(value) {
       const range = this.absoluteMaxYear - this.absoluteMinYear
+      if (range === 0) return 0
       return ((value - this.absoluteMinYear) / range) * 100
     },
 
@@ -226,7 +227,7 @@ export default {
 }
 
 .slider.max-slider {
-  z-index: 4;
+  z-index: 5;
 }
 
 .slider-track {
@@ -335,7 +336,7 @@ export default {
   }
 
   .slider-ticks {
-    top: calc(50%-12px);
+    top: calc(50% + 6px);
   }
 
   .year-tick-label {
