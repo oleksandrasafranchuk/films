@@ -95,7 +95,7 @@ export default {
       const newestResponse = await api.get('/discover/movie', {
         params: {
           sort_by: 'primary_release_date.desc',
-          'primary_release_date.lte': `${new Date().getFullYear() + 2}-12-31`,
+          'primary_release_date.lte': `${new Date().getFullYear()}-12-31`,
           page: 1,
         },
       })

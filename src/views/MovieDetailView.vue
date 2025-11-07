@@ -102,7 +102,7 @@ export default {
         setTimeout(() => {
           const scrollY = parseInt(sessionStorage.getItem('movieScrollPosition') || '0', 10)
           window.scrollTo(0, scrollY)
-        }, 50)
+        }, 100)
       })
     },
 

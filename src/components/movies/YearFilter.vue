@@ -65,9 +65,9 @@ export default {
   data() {
     return {
       minYear: 1900,
-      maxYear: new Date().getFullYear(),
+      maxYear: 2025,
       absoluteMinYear: 1900,
-      absoluteMaxYear: new Date().getFullYear(),
+      absoluteMaxYear: 2025,
       yearTicks: [],
     }
   },
@@ -184,6 +184,7 @@ export default {
   left: 0;
   top: 50%;
   transform: translateY(-50%);
+  padding: 0;
 }
 
 .slider::-webkit-slider-thumb {
@@ -222,12 +223,17 @@ export default {
   box-shadow: 0 3px 10px var(--shadow-dark);
 }
 
+.slider::-moz-range-track {
+  background: transparent;
+  border: none;
+}
+
 .slider.min-slider {
   z-index: 5;
 }
 
 .slider.max-slider {
-  z-index: 5;
+  z-index: 4;
 }
 
 .slider-track {
@@ -250,6 +256,7 @@ export default {
   border-radius: 3px;
   transition: all 0.1s ease;
   z-index: 2;
+  pointer-events: none;
 }
 
 .slider-ticks {
@@ -259,6 +266,7 @@ export default {
   top: calc(50% + 12px);
   left: 0;
   z-index: 1;
+  pointer-events: none;
 }
 
 .tick {
@@ -285,6 +293,7 @@ export default {
   left: 0;
   display: flex;
   align-items: flex-end;
+  pointer-events: none;
 }
 
 .year-tick-label {
